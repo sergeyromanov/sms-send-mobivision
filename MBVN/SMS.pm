@@ -1,4 +1,4 @@
-package SMS;
+package MBVN::SMS;
 
 use strict;
 

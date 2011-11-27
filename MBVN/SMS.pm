@@ -11,14 +11,14 @@ my $BALANCE_URL = 'http://connect.mbvn.ru/xml/balance.php';
 
 sub new {
     my ($class, $login, $password, $origin) = @_;
-    
+
     my $self = {
         'login'    => $login,
-        'password' => $password, 
+        'password' => $password,
         'origin'   => $origin,
     };
     bless $self, $class;
-    
+
     return $self;
 }
 
@@ -31,20 +31,20 @@ sub send {
 
     my $message = $dom->createElement('message');
     $message->setAttribute('type', 'sms');
-      
+
     my $sender = $dom->createElement('sender');
     $sender->appendText($self->{'origin'});
     $message->appendChild($sender);
-      
+
     my $text = $dom->createElement('text');
     $text->appendText($string);
     $message->appendChild($text);
 
     my $recipient = $dom->createElement('abonent');
-    $recipient->setAttribute('phone', '7' . $phone);
+    $recipient->setAttribute('phone', '7'.$phone);
     $recipient->setAttribute('number_sms', '1');
     $message->appendChild($recipient);
-      
+
     $root->appendChild($message);
 
     my $security = $dom->createElement('security');
@@ -61,7 +61,7 @@ sub send {
 
     my $xml = $dom->toString;
     $xml =~ s/\n//g;
-    
+
     my $ua  = LWP::UserAgent->new;
     my $res = $ua->request(
         POST $SEND_URL,
@@ -96,3 +96,4 @@ XML
 
 
 1;
+

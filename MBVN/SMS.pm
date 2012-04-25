@@ -10,12 +10,12 @@ my $SEND_URL = 'http://connect.mbvn.ru/xml/';
 my $BALANCE_URL = 'http://connect.mbvn.ru/xml/balance.php';
 
 sub new {
-    my ($class, $login, $password, $origin) = @_;
+    my($class, $login, $password, $origin) = @_;
 
     my $self = {
-        'login'    => $login,
-        'password' => $password,
-        'origin'   => $origin,
+        login    => $login,
+        password => $password,
+        origin   => $origin,
     };
     bless $self, $class;
 
@@ -23,7 +23,7 @@ sub new {
 }
 
 sub send {
-    my ($self, $phone, $string) = @_;
+    my($self, $phone, $string) = @_;
 
     my $dom = XML::LibXML::Document->new('1.0', 'UTF-8');
     my $root = $dom->createElement('request');
@@ -50,11 +50,11 @@ sub send {
     my $security = $dom->createElement('security');
 
     my $login = $dom->createElement('login');
-    $login->setAttribute('value', $self->{'login'});
+    $login->setAttribute('value', $self->{login});
     $security->appendChild($login);
 
     my $password = $dom->createElement('password');
-    $password->setAttribute('value',  $self->{'password'});
+    $password->setAttribute('value',  $self->{password});
     $security->appendChild($password);
 
     $root->appendChild($security);
@@ -66,9 +66,9 @@ sub send {
     my $res = $ua->request(
         POST $SEND_URL,
         Content_Type => 'text/xml',
-        Content => $xml
+        Content      => $xml
     );
-    my $answer = XML::LibXML->load_xml('string' => $res->content);
+    my $answer = XML::LibXML->load_xml(string => $res->content);
     my $xc  = XML::LibXML::XPathContext->new($answer);
     return $xc->findvalue('/response/information') eq 'send' ? 1 : 0;
 }
@@ -79,8 +79,8 @@ sub balance {
 <?xml  version="1.0" encoding="utf-8" ?>
 <request>
   <security>
-    <login value="$self->{'login'}" />
-    <password value="$self->{'password'}" />
+    <login value="$self->{login}" />
+    <password value="$self->{password}" />
   </security>
 </request>
 XML
@@ -89,9 +89,10 @@ XML
     my $res = $ua->request(
         POST $BALANCE_URL,
         Content_Type => 'text/xml',
-        Content => $xml
+        Content      => $xml
     );
-    use Data::Dumper; print Dumper $res;
+
+    return $res;
 }
 
 

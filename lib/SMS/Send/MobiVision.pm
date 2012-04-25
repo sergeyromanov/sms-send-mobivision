@@ -1,4 +1,4 @@
-package MBVN::SMS;
+package SMS::Send::MobiVision;
 
 use strict;
 

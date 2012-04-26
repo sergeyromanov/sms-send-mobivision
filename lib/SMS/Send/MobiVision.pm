@@ -1,6 +1,7 @@
 package SMS::Send::MobiVision;
 
 use strict;
+use v5.10.1;
 
 use parent qw(SMS::Send::Driver);
 
@@ -31,7 +32,7 @@ sub send_sms {
         request => {
             message => {
                 -type   => 'sms',
-                sender  => $args{sender} || $self->{_origin},
+                sender  => $args{sender} // $self->{_origin},
                 text    => $args{text},
                 abonent => {
                     -phone      => $args{to},

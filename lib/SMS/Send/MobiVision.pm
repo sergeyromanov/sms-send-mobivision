@@ -1,5 +1,7 @@
 package SMS::Send::MobiVision;
 
+# ABSTRACT: SMS::Send MobiVision driver
+
 use strict;
 use v5.10.1;
 
@@ -8,7 +10,7 @@ use parent qw(SMS::Send::Driver);
 use HTTP::Tiny;
 use XML::TreePP;
 
-my $SEND_URL = 'http://connect.mbvn.ru/xml/';
+my $SEND_URL    = 'http://connect.mbvn.ru/xml/';
 my $BALANCE_URL = 'http://connect.mbvn.ru/xml/balance.php';
 
 sub new {

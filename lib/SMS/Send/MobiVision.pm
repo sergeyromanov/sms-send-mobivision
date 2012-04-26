@@ -2,6 +2,8 @@ package SMS::Send::MobiVision;
 
 use strict;
 
+use parent qw(SMS::Send::Driver);
+
 use HTTP::Tiny;
 use XML::TreePP;
 
@@ -9,43 +11,42 @@ my $SEND_URL = 'http://connect.mbvn.ru/xml/';
 my $BALANCE_URL = 'http://connect.mbvn.ru/xml/balance.php';
 
 sub new {
-    my($class, $login, $password, $origin) = @_;
+    my $class  = shift;
 
     my $self = {
-        login    => $login,
-        password => $password,
-        origin   => $origin,
+        _ua => HTTP::Tiny->new,
+        @_,
     };
     bless $self, $class;
 
     return $self;
 }
 
-sub send {
-    my($self, $phone, $string) = @_;
+sub send_sms {
+    my($self, %args) = @_;
 
+    $args{to} =~ s/^\+//;
     my $tpp = XML::TreePP->new;
     my $tree = {
         request => {
             message => {
-                -type => 'sms',
-                sender => $self->{origin},
+                -type   => 'sms',
+                sender  => $args{sender} || $self->{_origin},
+                text    => $args{text},
                 abonent => {
-                    -phone => $phone,
+                    -phone      => $args{to},
                     -number_sms => 1,
                 },
-                text => $string,
             },
             security => {
-                login    => {-value => $self->{login}},
-                password => {-value => $self->{password}},
+                login    => {-value => $self->{_login}},
+                password => {-value => $self->{_password}},
             }
         }
     };
     my $xml = $tpp->write($tree);
 
-    my $ua  = HTTP::Tiny->new;
-    my $res = $ua->post($SEND_URL, {
+    my $res = $self->{_ua}->post($SEND_URL, {
         content => $xml
     });
 
@@ -59,15 +60,14 @@ sub balance {
     my $tree = {
         request => {
             security => {
-                login    => {-value => $self->{login}},
-                password => {-value => $self->{password}},
+                login    => {-value => $self->{_login}},
+                password => {-value => $self->{_password}},
             }
         }
     };
     my $xml = $tpp->write($tree);
 
-    my $ua  = HTTP::Tiny->new;
-    my $res = $ua->post($BALANCE_URL, {
+    my $res = $self->{_ua}->post($BALANCE_URL, {
         content => $xml
     });
 

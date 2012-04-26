@@ -10,8 +10,10 @@ use parent qw(SMS::Send::Driver);
 use HTTP::Tiny;
 use XML::TreePP;
 
-my $SEND_URL    = 'http://connect.mbvn.ru/xml/';
-my $BALANCE_URL = 'http://connect.mbvn.ru/xml/balance.php';
+my %URLS = (
+    send    => 'http://connect.mbvn.ru/xml/',
+    balance => 'http://connect.mbvn.ru/xml/balance.php'
+);
 
 sub new {
     my $class  = shift;
@@ -49,7 +51,7 @@ sub send_sms {
     };
     my $xml = $tpp->write($tree);
 
-    my $res = $self->{_ua}->post($SEND_URL, {
+    my $res = $self->{_ua}->post($URLS{send}, {
         content => $xml
     });
 
@@ -70,7 +72,7 @@ sub balance {
     };
     my $xml = $tpp->write($tree);
 
-    my $res = $self->{_ua}->post($BALANCE_URL, {
+    my $res = $self->{_ua}->post($URLS{balance}, {
         content => $xml
     });
 

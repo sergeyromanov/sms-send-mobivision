@@ -2,8 +2,7 @@ package SMS::Send::MobiVision;
 
 use strict;
 
-use HTTP::Request::Common;
-use LWP::UserAgent ();
+use HTTP::Tiny;
 use XML::LibXML;
 
 my $SEND_URL = 'http://connect.mbvn.ru/xml/';
@@ -62,12 +61,10 @@ sub send {
     my $xml = $dom->toString;
     $xml =~ s/\n//g;
 
-    my $ua  = LWP::UserAgent->new;
-    my $res = $ua->request(
-        POST $SEND_URL,
-        Content_Type => 'text/xml',
-        Content      => $xml
-    );
+    my $ua  = HTTP::Tiny->new;
+    my $res = $ua->post($SEND_URL, {
+        content => $xml
+    });
     my $answer = XML::LibXML->load_xml(string => $res->content);
     my $xc  = XML::LibXML::XPathContext->new($answer);
     return $xc->findvalue('/response/information') eq 'send' ? 1 : 0;
@@ -76,7 +73,7 @@ sub send {
 sub balance {
     my $self = shift;
     my $xml = <<XML;
-<?xml  version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <request>
   <security>
     <login value="$self->{login}" />
@@ -85,12 +82,10 @@ sub balance {
 </request>
 XML
 
-    my $ua  = LWP::UserAgent->new;
-    my $res = $ua->request(
-        POST $BALANCE_URL,
-        Content_Type => 'text/xml',
-        Content      => $xml
-    );
+    my $ua  = HTTP::Tiny->new;
+    my $res = $ua->post($BALANCE_URL, {
+        content => $xml
+    });
 
     return $res;
 }

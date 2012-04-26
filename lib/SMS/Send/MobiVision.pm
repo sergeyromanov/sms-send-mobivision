@@ -3,7 +3,7 @@ package SMS::Send::MobiVision;
 use strict;
 
 use HTTP::Tiny;
-use XML::LibXML;
+use XML::TreePP;
 
 my $SEND_URL = 'http://connect.mbvn.ru/xml/';
 my $BALANCE_URL = 'http://connect.mbvn.ru/xml/balance.php';
@@ -24,50 +24,32 @@ sub new {
 sub send {
     my($self, $phone, $string) = @_;
 
-    my $dom = XML::LibXML::Document->new('1.0', 'UTF-8');
-    my $root = $dom->createElement('request');
-    $dom->setDocumentElement($root);
-
-    my $message = $dom->createElement('message');
-    $message->setAttribute('type', 'sms');
-
-    my $sender = $dom->createElement('sender');
-    $sender->appendText($self->{'origin'});
-    $message->appendChild($sender);
-
-    my $text = $dom->createElement('text');
-    $text->appendText($string);
-    $message->appendChild($text);
-
-    my $recipient = $dom->createElement('abonent');
-    $recipient->setAttribute('phone', '7'.$phone);
-    $recipient->setAttribute('number_sms', '1');
-    $message->appendChild($recipient);
-
-    $root->appendChild($message);
-
-    my $security = $dom->createElement('security');
-
-    my $login = $dom->createElement('login');
-    $login->setAttribute('value', $self->{login});
-    $security->appendChild($login);
-
-    my $password = $dom->createElement('password');
-    $password->setAttribute('value',  $self->{password});
-    $security->appendChild($password);
-
-    $root->appendChild($security);
-
-    my $xml = $dom->toString;
-    $xml =~ s/\n//g;
+    my $tpp = XML::TreePP->new;
+    my $tree = {
+        request => {
+            message => {
+                -type => 'sms',
+                sender => $self->{origin},
+                abonent => {
+                    -phone => $phone,
+                    -number_sms => 1,
+                },
+                text => $string,
+            },
+            security => {
+                login    => {-value => $self->{login}},
+                password => {-value => $self->{password}},
+            }
+        }
+    };
+    my $xml = $tpp->write($tree);
 
     my $ua  = HTTP::Tiny->new;
     my $res = $ua->post($SEND_URL, {
         content => $xml
     });
-    my $answer = XML::LibXML->load_xml(string => $res->content);
-    my $xc  = XML::LibXML::XPathContext->new($answer);
-    return $xc->findvalue('/response/information') eq 'send' ? 1 : 0;
+
+    return $res->{content};
 }
 
 sub balance {
@@ -87,7 +69,7 @@ XML
         content => $xml
     });
 
-    return $res;
+    return $res->{content};
 }
 
 

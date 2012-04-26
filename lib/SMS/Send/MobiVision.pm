@@ -54,15 +54,17 @@ sub send {
 
 sub balance {
     my $self = shift;
-    my $xml = <<XML;
-<?xml version="1.0" encoding="utf-8" ?>
-<request>
-  <security>
-    <login value="$self->{login}" />
-    <password value="$self->{password}" />
-  </security>
-</request>
-XML
+
+    my $tpp = XML::TreePP->new;
+    my $tree = {
+        request => {
+            security => {
+                login    => {-value => $self->{login}},
+                password => {-value => $self->{password}},
+            }
+        }
+    };
+    my $xml = $tpp->write($tree);
 
     my $ua  = HTTP::Tiny->new;
     my $res = $ua->post($BALANCE_URL, {

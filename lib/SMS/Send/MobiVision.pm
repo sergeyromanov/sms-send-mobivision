@@ -7,6 +7,7 @@ use v5.10.1;
 
 use parent qw(SMS::Send::Driver);
 
+use Carp qw(croak);
 use HTTP::Tiny;
 use XML::TreePP;
 
@@ -54,8 +55,9 @@ sub send_sms {
     my $res = $self->{_ua}->post($URLS{send}, {
         content => $xml
     });
+    croak("Bad response: $res->{content}") unless $res->{status} eq '200';
 
-    return $res->{content};
+    return $tpp->parse($res->{content})->{response};
 }
 
 sub balance {
@@ -75,8 +77,9 @@ sub balance {
     my $res = $self->{_ua}->post($URLS{balance}, {
         content => $xml
     });
+    croak("Bad response: $res->{content}") unless $res->{status} eq '200';
 
-    return $res->{content};
+    return $tpp->parse($res->{content})->{response};
 }
 
 
